@@ -54,34 +54,35 @@ app.post('/signin', (req, res) =>{
     } catch (error) {
       console.error(error);
       res.status(400).json({ success: false }); // Generic error for client
-  
     }
 });
 
 app.post('/register', (req, res) =>{
+  const {email, name, password} = req.body.body; 
 
-  const {email, name, password} = req.body; 
-
-  database.users.push({
-    id: '125',
+  const lastUser = database.users.at(-1)
+  const newUser = {
+    id: (Number(lastUser.id) + 1).toString(),
     name: name,
     email: email,
     password: password,
     entries: 0,
     joined: new Date()
-  })
-  res.json(database.users[database.users.length - 1])
+  }
+
+  database.users.push(newUser)
+
+  res.status(200).json(newUser)
 })
 
 app.get('/profile/:id', (req, res) =>{
   const { id } = req.params;
-  database.users.forEach(user =>{
-    if(user.id === id){
-      res.json(user)
-    } else{
-      res.status(404).json|('no such user')
-    }
-  })
+  const user = database.users.find((user) => user.id === id)
+  if (user) {
+    res.status(200).json(user)
+  } else {
+    res.status(404).json({user: null})
+  }
 })
 
 app.put('/image', (req, res) => {
