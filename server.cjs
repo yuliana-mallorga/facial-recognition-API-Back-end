@@ -87,16 +87,16 @@ app.get('/profile/:id', (req, res) =>{
 
 app.put('/image', (req, res) => {
   const { id } = req.body;
-  let found = false;
-  database.users.forEach(user => {
+  const user = database.users.find(user => {
     if(user.id === id ){ 
-      found = true;
       user.entries++
-      return res.json(user.entries);
+      return true
     }
   })
-  if(!found) {
-    res.status(400).json('nor found');
+  if (user) {
+    res.status(200).json(user)
+  } else {
+    res.status(404).json({user: null})
   }
 });
 
