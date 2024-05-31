@@ -45,9 +45,12 @@ app.get('/', (req, res) => {
 
 app.post('/signin', (req, res) =>{
     try {
-      const user = database.users.find((user)=> user.email === req.body.body.email && user.password === req.body.body.password)
+      console.log('AAAAAAAAAAAAAAAAAAAAAsignin', req.body);
+      const {email, password} = req.body;
+      const user = database.users.find((user)=> user.email === email && user.password === password)
+      console.log('antes de if', user);
       if (user) {
-        res.status(200).json({ success: true });
+        res.status(200).json(database.users[0]);
       } else {
         res.status(403).json({success: false})
       }
@@ -58,7 +61,8 @@ app.post('/signin', (req, res) =>{
 });
 
 app.post('/register', (req, res) =>{
-  const {email, name, password} = req.body.body; 
+  console.log('YYYYYYYYYYregister', req.body);
+  const { email, name, password } = req.body; 
 
   const lastUser = database.users.at(-1)
   const newUser = {
