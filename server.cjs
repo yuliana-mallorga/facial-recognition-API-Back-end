@@ -16,42 +16,7 @@ const db = knex({
   },
 });
 
-db.select('*').from('users').then( data => {
-  console.log(data);
-  
-});
-
-
 const app = express();
-
-const database = {
-    users: [
-        {
-            id: '123',
-            name: 'John',
-            password: 'cookies',
-            email: 'john12@gmail.com',
-            password: 'cookies',
-            entries: 0,
-            joined: new Date()
-        },
-        {
-            id: '124',
-            name: 'Dana',
-            password: 'chess',
-            email: 'dana1@gmail.com',
-            entries: 0,
-            joined: new Date()
-        }
-    ],
-    login: [
-      {
-        id: '987',
-        has: '',
-        email: 'john12@gmail.com'
-      }
-    ]
-}
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -59,66 +24,62 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors()); 
 
-app.get('/', (req, res) => {
-    res.send(database.users)
-});
 
-app.post('/signin', (req, res) =>{
-    try {
-      console.log('AAAAAAAAAAAAAAAAAAAAAsignin', req.body);
-      const {email, password} = req.body;
-      const user = database.users.find((user)=> user.email === email && user.password === password)
-      console.log('antes de if', user);
-      if (user) {
-        res.status(200).json(database.users[0]);
-      } else {
-        res.status(403).json({success: false})
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(400).json({ success: false }); // Generic error for client
-    }
-});
 
 app.post('/register', (req, res) =>{
   const { email, name, password } = req.body; 
-
-  db('users')
-  .returning('*')
-  .insert({ 
-    email: email, 
-    name: name,
-    joined: new Date()
-  }).then(user => {
-    res.status(200).json(user[0]);
+  const hash = bcrypt.hashSync(password);
+  db.transaction(trx => {
+    trx.insert({
+      hash: hash,
+      email: email
+    })
+    .into('login')
+    .returning('*')
+    .then( loginEmail => {
+      return trx('users')
+        .returning('*')
+        .insert({ 
+          email: loginEmail[0].email, 
+          name: name,
+          joined: new Date()
+        })
+        .then(user => {
+          res.status(200).json(user[0]);
+        })
+    })
+    .then(trx.commit)
+    .catch(trx.rollback)
   })
   .catch(err => res.status(400).json('unable to register'))
-  
 })
 
 app.get('/profile/:id', (req, res) =>{
   const { id } = req.params;
-  const user = database.users.find((user) => user.id === id)
-  if (user) {
-    res.status(200).json(user)
-  } else {
-    res.status(404).json({user: null})
-  }
+  db.select('*').from('users').where({id})
+  .then(user => {
+    if(user.length) {
+      res.status(200).json(user[0]);
+    } else {
+      res.status(404).json('Not found');
+    }
+  })
+  .catch(err =>{
+    res.status(400).json('Error getting user');
+  })
 })
 
 app.put('/image', (req, res) => {
   const { id } = req.body;
-  const user = database.users.find(user => {
-    if(user.id === id ){ 
-      user.entries++
-      return true
-    }
+  
+  db('users').where('id', '=', id)
+  .increment('entries', 1)
+  .returning('entries')
+  .then( entries => {
+    res.status(200).json(Number(entries[0].entries));
   })
-  if (user) {
-    res.status(200).json(user)
-  } else {
-    res.status(404).json({user: null})
-  }
+  .catch( err => res.status(400).json('Unable to get entries'))
+
 });
 
 app.listen(4000, () => {
