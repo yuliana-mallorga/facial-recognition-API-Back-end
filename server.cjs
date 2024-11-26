@@ -6,6 +6,9 @@ const cors = require('cors');
 
 const knex = require('knex');
 
+const register = require('./controllers/register.cjs');
+const { handleRegister } = require('./controllers/register.cjs');
+
 const db = knex({
   client: 'pg',
   connection: {
@@ -42,33 +45,7 @@ app.post('/signin', (req, res) => {
     .catch(err => res.status(401).json('invalid user or credentials'))
 })
 
-app.post('/register', (req, res) =>{
-  const { email, name, password } = req.body; 
-  const hash = bcrypt.hashSync(password);
-  db.transaction(trx => {
-    trx.insert({
-      hash: hash,
-      email: email
-    })
-    .into('login')
-    .returning('*')
-    .then( loginEmail => {
-      return trx('users')
-        .returning('*')
-        .insert({ 
-          email: loginEmail[0].email, 
-          name: name,
-          joined: new Date()
-        })
-        .then(user => {
-          res.status(200).json(user[0]);
-        })
-    })
-    .then(trx.commit)
-    .catch(trx.rollback)
-  })
-  .catch(err => res.status(400).json('unable to register'))
-})
+app.post('/register', (req, res) => {handleRegister(req, res, db, bcrypt)})
 
 app.get('/profile/:id', (req, res) =>{
   const { id } = req.params;
