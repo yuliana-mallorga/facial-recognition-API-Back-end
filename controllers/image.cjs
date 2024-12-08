@@ -16,8 +16,8 @@ const handleApiCall = async (req, res) => {
 
   const model = new Model({
     authConfig: {
-      pat: "99831ae376d34e6789ca5b2b6c158cfe",
-      userId: "clayuli2024",
+      pat: process.env.CLARIFAI_API_KEY,
+      userId: process.env.USER_ID,
       appId: "Project-face-detection",
     },
     modelId: "face-detection",
