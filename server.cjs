@@ -29,9 +29,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
-app.use(cors()); 
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+})); 
 
 app.get('/', (req, res) => { res.send('It is working')});
+app.get('/api', (req, res) => { res.json({ message: 'CORS configurado correctamente' })});
 app.post('/signin', handleSignin(db, bcrypt));
 app.post('/register', (req, res) => { handleRegister(req, res, db, bcrypt) });
 app.get('/profile/:id', (req, res) => { handleProfileGet(req, res, db) });
