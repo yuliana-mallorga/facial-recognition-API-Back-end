@@ -13,7 +13,7 @@ const { handleApiCall } = require('./controllers/image.cjs');
 const db = knex({
   client: 'pg',
   connection: {
-    connectionString: process.env.VITE_DATABASE_URL,
+    connectionString: process.env.DB_URL,
     ssl: { rejectUnauthorized: false },
     host: process.env.DB_HOST,
     port:5432,
