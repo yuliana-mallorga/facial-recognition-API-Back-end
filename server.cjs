@@ -30,7 +30,7 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors({
-  origin: 'https://facial-recognition-project-t6h5.onrender.com/', 
+  origin: 'https://facial-recognition-project-t6h5.onrender.com', 
   methods: ['GET', 'POST', 'PUT', 'DELETE'], 
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
